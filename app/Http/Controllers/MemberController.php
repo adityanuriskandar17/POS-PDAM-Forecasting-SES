@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Member;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use PDF;
 
@@ -25,13 +26,13 @@ class MemberController extends Controller
         return datatables()
             ->of($member)
             ->addIndexColumn()
-            ->addColumn('select_all', function ($member) {
+            ->addColumn('select_all', function ($produk) {
                 return '
-                    <input type="checkbox" name="id_member[]" value="' . $member->id_member . '">
+                    <input type="checkbox" name="id_member[]" value="' . $produk->id_member . '">
                 ';
             })
             ->addColumn('kode_member', function ($member) {
-                return '<span class="label label-success">' . $member->kode_member . '</span>';
+                return '<span class="label label-success">' . $member->kode_member . '<span>';
             })
             ->addColumn('aksi', function ($member) {
                 return '
@@ -41,7 +42,7 @@ class MemberController extends Controller
                 </div>
                 ';
             })
-            ->rawColumns(['aksi', 'kode_member', 'select_all'])
+            ->rawColumns(['aksi', 'select_all', 'kode_member'])
             ->make(true);
     }
 
@@ -63,8 +64,7 @@ class MemberController extends Controller
      */
     public function store(Request $request)
     {
-
-        $member = Member::Latest()->first() ?? new Member();
+        $member = Member::latest()->first() ?? new Member();
         $kode_member = (int) $member->kode_member + 1;
 
         $member = new Member();
@@ -74,14 +74,13 @@ class MemberController extends Controller
         $member->alamat = $request->alamat;
         $member->save();
 
-
         return response()->json('Data berhasil disimpan', 200);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -94,10 +93,10 @@ class MemberController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int $id 
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Member $member)
+    public function edit($id)
     {
         //
     }
@@ -106,7 +105,7 @@ class MemberController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -119,7 +118,7 @@ class MemberController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
@@ -137,10 +136,12 @@ class MemberController extends Controller
             $member = Member::find($id);
             $datamember[] = $member;
         }
-        $datamember = $datamember->chunk(2);
 
-        $no = 1;
-        $pdf = PDF::loadView('member.cetak', compact('datamember', 'no'));
+        $datamember = $datamember->chunk(2);
+        $setting    = Setting::first();
+
+        $no  = 1;
+        $pdf = PDF::loadView('member.cetak', compact('datamember', 'no', 'setting'));
         $pdf->setPaper(array(0, 0, 566.93, 850.39), 'potrait');
         return $pdf->stream('member.pdf');
     }
