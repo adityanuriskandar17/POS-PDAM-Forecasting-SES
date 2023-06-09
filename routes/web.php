@@ -9,6 +9,9 @@ use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\PenjualanDetailController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -97,4 +100,13 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/transaksi/loadform/{diskon}/{total}/{diterima}', [PenjualanDetailController::class, 'loadForm'])->name('transaksi.load_form');
     Route::resource('/transaksi', PenjualanDetailController::class)
         ->except('create', 'show', 'edit');
+
+    // * LAPORAN
+    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+    Route::get('/laporan/data/{awal}/{akhir}', [LaporanController::class, 'data'])->name('laporan.data');
+    Route::get('/laporan/pdf/{awal}/{akhir}', [LaporanController::class, 'exportPDF'])->name('laporan.export_pdf');
+
+    // * USER
+    Route::get('/user/data', [UserController::class, 'data'])->name('user.data');
+    Route::resource('/user', UserController::class);
 });
